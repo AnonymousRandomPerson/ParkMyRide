@@ -10,8 +10,6 @@ public class AudioController : MonoBehaviour {
 	AudioSource uiSource;
 	// The audio source on the player used for the engine sound.
 	AudioSource engineSource;
-	[Tooltip("The default sound used if the sound to be played is not implemented yet.")]
-	public AudioClip defaultBeep;
 	[Tooltip("Car collision sound.")]
 	public AudioClip carCollide;
 	[Tooltip("Warning when a person is in front of the car.")]
@@ -35,7 +33,7 @@ public class AudioController : MonoBehaviour {
 
 	// Use this for initialization.
 	void Start () {
-		driver = transform.parent.GetComponent<Driver> ();
+		driver = transform.GetComponentInParent<Driver> ();
 		uiSource = GetComponent<AudioSource> ();
 		engineSource = transform.parent.GetComponent<AudioSource> ();
 	}
@@ -53,8 +51,9 @@ public class AudioController : MonoBehaviour {
 			uiSource.PlayOneShot (rightFloor);
 		}
 
-		engineSource.volume = driver.moveSpeed / driver.maxSpeed / 10;
-		engineSource.pitch = Mathf.Min (1, (driver.moveSpeed * driver.moveSpeed) / (driver.maxSpeed * driver.maxSpeed));
+		float absoluteSpeed = Mathf.Abs (driver.moveSpeed);
+		engineSource.volume = absoluteSpeed / driver.maxSpeed / 10;
+		engineSource.pitch = Mathf.Min (1, (absoluteSpeed * absoluteSpeed) / (driver.maxSpeed * driver.maxSpeed));
 
 	}
 	

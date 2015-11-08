@@ -19,7 +19,7 @@ public class Driver : MonoBehaviour {
 	public int floor = 1;
 	// The floor the car needs to get to.
 	[HideInInspector]
-	public int targetFloor;
+	public int targetFloor = 0;
 	[Tooltip("The index of the location the car wants to get to.")]
 	public int targetIndex = 0;
 	[Tooltip("The locations the car wants to get to.")]
@@ -32,7 +32,6 @@ public class Driver : MonoBehaviour {
 	void Start () {
 		audioController = GetComponentInChildren<AudioController> ();
 		body = GetComponent<Rigidbody> ();
-		CheckTargetFloor ();
 	}
 	
 	// Update is called once per frame.
