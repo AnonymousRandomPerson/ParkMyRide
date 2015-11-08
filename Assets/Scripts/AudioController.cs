@@ -14,44 +14,76 @@ public class AudioController : MonoBehaviour {
 	public AudioClip defaultBeep;
 	[Tooltip("Car collision sound.")]
 	public AudioClip carCollide;
+	[Tooltip("Warning when a person is in front of the car.")]
+	public AudioClip personWarning;
+	[Tooltip("Indicates that the player needs to go up a floor.")]
+	public AudioClip goUp;
+	[Tooltip("Indicates that the player needs to go down a floor.")]
+	public AudioClip goDown;
+	[Tooltip("Guides the player towards a free parking spot.")]
+	public AudioClip rightFloor;
 
-	// Minimum time delay between collision sounds being played
+	// Minimum time delay between collision sounds being played.
 	const int COLLIDETIMERLIMIT = 5;
 	// Timer for playing collision sounds.
-	int collideTimer;
+	int collideTimer = 0;
+
+	// Time delay between sounds that guide the player to a free parking spot.
+	int rightFloorTimerLimit = 10;
+	// Timer for playing sounds that guide the player to a free parking spot.
+	int rightFloorTimer = 0;
 
 	// Use this for initialization.
 	void Start () {
 		driver = transform.parent.GetComponent<Driver> ();
 		uiSource = GetComponent<AudioSource> ();
 		engineSource = transform.parent.GetComponent<AudioSource> ();
-		collideTimer = COLLIDETIMERLIMIT;
 	}
 	
 	// Update is called once per frame.
 	void Update () {
-		collideTimer--;
+		collideTimer++;
+
+		if (driver.floor != driver.targetFloor) {
+			rightFloorTimer = 0;
+		}
+		if (++rightFloorTimer > rightFloorTimerLimit) {
+			rightFloorTimer = 0;
+			float distance = driver.GetTargetDistance ();
+			uiSource.PlayOneShot (rightFloor);
+		}
+
 		engineSource.volume = driver.moveSpeed / driver.maxSpeed / 10;
 		engineSource.pitch = Mathf.Min (1, (driver.moveSpeed * driver.moveSpeed) / (driver.maxSpeed * driver.maxSpeed));
-	}
 
-	// Plays an audio clip, or a beep if the clip hasn't been implemented yet.
-	void PlaySound (AudioClip clip) {
-		if (clip == null) {
-			uiSource.PlayOneShot (defaultBeep);
-		} else {
-			uiSource.PlayOneShot (clip);
-		}
 	}
 	
 	// Plays sounds when the player collides with obstacles.
 	public void Collide (Collision collision) {
-		if (collideTimer < 0) {
-			collideTimer = COLLIDETIMERLIMIT;
+		if (collideTimer > COLLIDETIMERLIMIT) {
+			collideTimer = 0;
 			float volume = driver.moveSpeed / driver.maxSpeed;
 			if (collision.collider.name == "Car" || collision.collider.name == "Wall") {
 				uiSource.PlayOneShot (carCollide, volume);
 			}
+		}
+	}
+
+	// Plays a sound when the player or the target changes floors.
+	public void ChangeFloor () {
+		if (driver.floor < driver.targetFloor) {
+			uiSource.PlayOneShot (goUp);
+		} else if (driver.floor > driver.targetFloor) {
+			uiSource.PlayOneShot (goDown);
+		} else {
+			uiSource.PlayOneShot (rightFloor);
+		}
+	}
+
+	// Plays a sound when a person gets in the way of the player.
+	void OnTriggerEnter (Collider collider) {
+		if (collider.name == "Person") {
+			uiSource.PlayOneShot (personWarning);
 		}
 	}
 }
