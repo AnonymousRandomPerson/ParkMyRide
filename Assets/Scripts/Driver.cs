@@ -81,13 +81,7 @@ public class Driver : MonoBehaviour {
 
 	// Plays sounds when the player collides with obstacles.
 	void OnCollisionEnter (Collision collision) {
-		if (collision.collider.name == "Free Spot") {
-			targetIndex = 1;
-			audioController.foundSpot();
-			audioController.ChangeTarget(targetIndex);
-		} else {
-			audioController.Collide (collision);
-		}
+		audioController.Collide (collision);
 	}
 
 	// Checks if the target has changed, and changes the target floor if it has.
@@ -96,9 +90,7 @@ public class Driver : MonoBehaviour {
 			prevIndex = targetIndex;
 			int prevFloor = targetFloor;
 			targetFloor = GetFloor (target [targetIndex]);
-			if (targetFloor != prevFloor) {
-				audioController.ChangeFloor ();
-			}
+			audioController.ChangeTarget (targetIndex);
 		}
 	}
 
@@ -109,6 +101,6 @@ public class Driver : MonoBehaviour {
 
 	// Gets the current floor of an object.
 	int GetFloor (GameObject gameObject) {
-		return (int)(Mathf.Floor(gameObject.transform.position.y - 1.5f)) / 8 + 1;
+		return (int)(gameObject.transform.position.y - 0.5f) / 8 + 1;
 	}
 }

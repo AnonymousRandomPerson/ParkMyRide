@@ -20,11 +20,11 @@ public class AudioController : MonoBehaviour {
 	public AudioClip goDown;
 	[Tooltip("Guides the player towards a free parking spot.")]
 	public AudioClip rightFloor;
-	[Tooltip("Indicates that the player is on the way to find empty parking spot.")]
+	[Tooltip("Indicates that the player is on the way to find an empty parking spot.")]
 	public AudioClip lookForSpot;
-	[Tooltip("Indicates that the player is on the way to find exit.")]
+	[Tooltip("Indicates that the player is on the way to find the exit.")]
 	public AudioClip lookForExit;
-	[Tooltip("Indicates that the player arrives the target.")]
+	[Tooltip("Indicates that the player arrived at the target.")]
 	public AudioClip arriving;
 
 	// Minimum time delay between collision sounds being played.
@@ -33,9 +33,14 @@ public class AudioController : MonoBehaviour {
 	int collideTimer = 0;
 
 	// Time delay between sounds that guide the player to a free parking spot.
-	int rightFloorTimerLimit = 10;
+	int rightFloorTimerLimit = 100;
 	// Timer for playing sounds that guide the player to a free parking spot.
 	int rightFloorTimer = 0;
+	// Whether the player has found its target.
+	bool found = false;
+
+	// Timer for scheduling the floor change sound after changing targets.
+	int changeFloorTimer = -1;
 
 	// Use this for initialization.
 	void Start () {
@@ -47,20 +52,23 @@ public class AudioController : MonoBehaviour {
 	// Update is called once per frame.
 	void Update () {
 		collideTimer++;
+		if (--changeFloorTimer == 0) {
+			ChangeFloor ();
+		}
 
-		if (driver.floor != driver.targetFloor) {
+		if (driver.floor != driver.targetFloor || found) {
 			rightFloorTimer = 0;
 		}
 		if (++rightFloorTimer > rightFloorTimerLimit) {
 			rightFloorTimer = 0;
 			float distance = driver.GetTargetDistance ();
+			rightFloorTimerLimit = 10 + (int)(90 * distance / 100);
 			uiSource.PlayOneShot (rightFloor);
 		}
 
 		float absoluteSpeed = Mathf.Abs (driver.moveSpeed);
 		engineSource.volume = absoluteSpeed / driver.maxSpeed / 10;
 		engineSource.pitch = Mathf.Min (1, (absoluteSpeed * absoluteSpeed) / (driver.maxSpeed * driver.maxSpeed));
-
 	}
 	
 	// Plays sounds when the player collides with obstacles.
@@ -75,7 +83,10 @@ public class AudioController : MonoBehaviour {
 	}
 
 	public void foundSpot() {
-		uiSource.PlayOneShot (arriving);
+		if (!found) {
+			uiSource.PlayOneShot (arriving);
+			found = true;
+		}
 	}
 
 	public void ChangeTarget(int targetIndex) {
@@ -84,8 +95,10 @@ public class AudioController : MonoBehaviour {
 		} else {
 			uiSource.PlayOneShot (lookForSpot);
 		}
-
+		found = false;
+		changeFloorTimer = 40;
 	}
+
 	// Plays a sound when the player or the target changes floors.
 	public void ChangeFloor () {
 		if (driver.floor < driver.targetFloor) {
@@ -101,6 +114,8 @@ public class AudioController : MonoBehaviour {
 	void OnTriggerEnter (Collider collider) {
 		if (collider.name == "Person") {
 			uiSource.PlayOneShot (personWarning);
+		} else if (collider.name == "Free Spot") {
+			foundSpot();
 		}
 	}
 }
