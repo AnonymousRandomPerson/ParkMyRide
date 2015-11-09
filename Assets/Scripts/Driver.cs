@@ -15,10 +15,10 @@ public class Driver : MonoBehaviour {
 	[Tooltip("The acceleration of the car per frame.")]
 	public float acceleration;
 	// The current floor the car is on.
-	[HideInInspector]
+	//[HideInInspector]
 	public int floor = 1;
 	// The floor the car needs to get to.
-	[HideInInspector]
+	//[HideInInspector]
 	public int targetFloor = 0;
 	[Tooltip("The index of the location the car wants to get to.")]
 	public int targetIndex = 0;
@@ -81,7 +81,13 @@ public class Driver : MonoBehaviour {
 
 	// Plays sounds when the player collides with obstacles.
 	void OnCollisionEnter (Collision collision) {
-		audioController.Collide (collision);
+		if (collision.collider.name == "Free Spot") {
+			targetIndex = 1;
+			audioController.foundSpot();
+			audioController.ChangeTarget(targetIndex);
+		} else {
+			audioController.Collide (collision);
+		}
 	}
 
 	// Checks if the target has changed, and changes the target floor if it has.
@@ -103,6 +109,6 @@ public class Driver : MonoBehaviour {
 
 	// Gets the current floor of an object.
 	int GetFloor (GameObject gameObject) {
-		return (int)((gameObject.transform.position.y - 1.5) / 8) + 1;
+		return (int)(Mathf.Floor(gameObject.transform.position.y - 1.5f)) / 8 + 1;
 	}
 }

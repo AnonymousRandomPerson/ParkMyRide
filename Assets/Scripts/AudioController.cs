@@ -20,6 +20,12 @@ public class AudioController : MonoBehaviour {
 	public AudioClip goDown;
 	[Tooltip("Guides the player towards a free parking spot.")]
 	public AudioClip rightFloor;
+	[Tooltip("Indicates that the player is on the way to find empty parking spot.")]
+	public AudioClip lookForSpot;
+	[Tooltip("Indicates that the player is on the way to find exit.")]
+	public AudioClip lookForExit;
+	[Tooltip("Indicates that the player arrives the target.")]
+	public AudioClip arriving;
 
 	// Minimum time delay between collision sounds being played.
 	const int COLLIDETIMERLIMIT = 5;
@@ -68,6 +74,18 @@ public class AudioController : MonoBehaviour {
 		}
 	}
 
+	public void foundSpot() {
+		uiSource.PlayOneShot (arriving);
+	}
+
+	public void ChangeTarget(int targetIndex) {
+		if (targetIndex == 1) {
+			uiSource.PlayOneShot (lookForExit);
+		} else {
+			uiSource.PlayOneShot (lookForSpot);
+		}
+
+	}
 	// Plays a sound when the player or the target changes floors.
 	public void ChangeFloor () {
 		if (driver.floor < driver.targetFloor) {
