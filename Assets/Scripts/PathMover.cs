@@ -31,8 +31,10 @@ public class PathMover : MonoBehaviour {
 		transform.position = SetXZ (transform.position, xz);
 		if (rotates) {
 			Vector3 look = SetXZ (Vector3.zero, points [nextPointIndex] - xz);
-			transform.rotation = Quaternion.LookRotation (look);
-			transform.eulerAngles += Vector3.right * 90;
+			if (look != Vector3.zero) {
+				transform.rotation = Quaternion.LookRotation (look);
+				transform.eulerAngles += Vector3.right * 90;
+			}
 		} else {
 			transform.rotation = initRotation;
 		}

@@ -6,6 +6,8 @@ public class AudioController : MonoBehaviour {
 
 	// The driver on the player.
 	Driver driver;
+	// The floor tracker on the player.
+	FloorTracker floorTracker;
 	// The audio source on the player used for the interface.
 	AudioSource uiSource;
 	// The audio source on the player used for the engine sound.
@@ -45,6 +47,7 @@ public class AudioController : MonoBehaviour {
 	// Use this for initialization.
 	void Start () {
 		driver = transform.GetComponentInParent<Driver> ();
+		floorTracker = transform.GetComponentInParent<FloorTracker> ();
 		uiSource = GetComponent<AudioSource> ();
 		engineSource = transform.parent.GetComponent<AudioSource> ();
 	}
@@ -56,12 +59,12 @@ public class AudioController : MonoBehaviour {
 			ChangeFloor ();
 		}
 
-		if (driver.floor != driver.targetFloor || found) {
+		if (floorTracker.floor != floorTracker.targetFloor || found) {
 			rightFloorTimer = 0;
 		}
 		if (++rightFloorTimer > rightFloorTimerLimit) {
 			rightFloorTimer = 0;
-			float distance = driver.GetTargetDistance ();
+			float distance = floorTracker.GetTargetDistance ();
 			rightFloorTimerLimit = 10 + (int)(90 * distance / 100);
 			uiSource.PlayOneShot (rightFloor);
 		}
@@ -101,9 +104,9 @@ public class AudioController : MonoBehaviour {
 
 	// Plays a sound when the player or the target changes floors.
 	public void ChangeFloor () {
-		if (driver.floor < driver.targetFloor) {
+		if (floorTracker.floor < floorTracker.targetFloor) {
 			uiSource.PlayOneShot (goUp);
-		} else if (driver.floor > driver.targetFloor) {
+		} else if (floorTracker.floor > floorTracker.targetFloor) {
 			uiSource.PlayOneShot (goDown);
 		} else {
 			uiSource.PlayOneShot (rightFloor);

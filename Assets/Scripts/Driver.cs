@@ -14,28 +14,42 @@ public class Driver : MonoBehaviour {
 	public float maxSpeed;
 	[Tooltip("The acceleration of the car per frame.")]
 	public float acceleration;
-	// The current floor the car is on.
-	//[HideInInspector]
-	public int floor = 1;
-	// The floor the car needs to get to.
-	//[HideInInspector]
-	public int targetFloor = 0;
-	[Tooltip("The index of the location the car wants to get to.")]
-	public int targetIndex = 0;
-	[Tooltip("The locations the car wants to get to.")]
-	public GameObject[] target;
+	// The player camera.
+	Transform playerCamera;
+	// Camera rotation centered at 0.
+	float rotation;
+	// The maximum amount that the camera can rotate.
+	const float MAXROTATION = 130;
+	// The initial rotation of the camera.
+	Vector3 initRotation;
 
-	// The index of the location the car wanted to get to on the previous frame.
-	int prevIndex = -1;
 
 	// Use this for initialization.
 	void Start () {
 		audioController = GetComponentInChildren<AudioController> ();
 		body = GetComponent<Rigidbody> ();
+		playerCamera = transform.FindChild ("Camera Holder").FindChild("Main Camera");
+		initRotation = playerCamera.localEulerAngles;
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
 	}
 	
 	// Update is called once per frame.
 	void Update () {
+		// Camera movement.
+		if (Input.GetMouseButton (0)) {
+			// Hold left mouse button to change camera.
+			float mouseInput = Input.GetAxis ("Mouse X") * 3;
+			if (mouseInput > 0 && rotation < MAXROTATION ||
+				mouseInput < 0 && rotation > -MAXROTATION) {
+				playerCamera.localEulerAngles = new Vector3 (playerCamera.localEulerAngles.x, playerCamera.localEulerAngles.y + mouseInput, playerCamera.localEulerAngles.z);
+				rotation += mouseInput;
+			}
+		} else {
+			playerCamera.localEulerAngles = initRotation;
+			rotation = 0;
+		}
+
 		if (GetKey (KeyCode.W, KeyCode.UpArrow)) {
 			// Drive forward.
 			moveSpeed = Mathf.MoveTowards (moveSpeed, maxSpeed, acceleration);
@@ -52,21 +66,14 @@ public class Driver : MonoBehaviour {
 		if (Mathf.Abs (moveSpeed) > 0.5f) {
 			// Handle turn input.
 			if (GetKey (KeyCode.A, KeyCode.LeftArrow)) {
-				transform.eulerAngles += Vector3.down * moveSpeed * 2 / maxSpeed;
+				transform.eulerAngles += Vector3.down * moveSpeed * 3 / maxSpeed;
 			}
 			if (GetKey (KeyCode.D, KeyCode.RightArrow)) {
-				transform.eulerAngles += Vector3.up * moveSpeed * 2 / maxSpeed;
+				transform.eulerAngles += Vector3.up * moveSpeed * 3 / maxSpeed;
 			}
 		}
 		float angle = Mathf.Deg2Rad * transform.eulerAngles.y;
 		body.velocity = new Vector3 (-moveSpeed * Mathf.Cos (angle), body.velocity.y, moveSpeed * Mathf.Sin (angle));
-		
-		int prevFloor = floor;
-		floor = GetFloor (gameObject);
-		if (floor != prevFloor) {
-			audioController.ChangeFloor ();
-		}
-		CheckTargetFloor ();
 	}
 
 	// Returns true if any of the given keys are pressed.
@@ -82,25 +89,5 @@ public class Driver : MonoBehaviour {
 	// Plays sounds when the player collides with obstacles.
 	void OnCollisionEnter (Collision collision) {
 		audioController.Collide (collision);
-	}
-
-	// Checks if the target has changed, and changes the target floor if it has.
-	void CheckTargetFloor () {
-		if (prevIndex != targetIndex) {
-			prevIndex = targetIndex;
-			int prevFloor = targetFloor;
-			targetFloor = GetFloor (target [targetIndex]);
-			audioController.ChangeTarget (targetIndex);
-		}
-	}
-
-	// Calculates the distance between the player and the target.
-	public float GetTargetDistance () {
-		return Vector3.Distance (transform.position, target [targetIndex].transform.position);
-	}
-
-	// Gets the current floor of an object.
-	int GetFloor (GameObject gameObject) {
-		return (int)(gameObject.transform.position.y - 0.5f) / 8 + 1;
 	}
 }
