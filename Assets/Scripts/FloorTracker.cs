@@ -54,7 +54,7 @@ public class FloorTracker : MonoBehaviour {
 	}
 	
 	// Gets the current floor of an object.
-	int GetFloor (GameObject gameObject) {
+	public int GetFloor (GameObject gameObject) {
 		return (int)(gameObject.transform.position.y - 0.5f) / 8 + 1;
 	}
 }
