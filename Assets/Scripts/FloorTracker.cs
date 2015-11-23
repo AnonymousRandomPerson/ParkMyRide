@@ -47,6 +47,11 @@ public class FloorTracker : MonoBehaviour {
 			audioController.ChangeTarget (targetIndex);
 		}
 	}
+
+	// Calculates the vector from the player to the target.
+	public Vector3 GetTargetVector () {
+		return target [targetIndex].transform.position - transform.position;
+	}
 	
 	// Calculates the distance between the player and the target.
 	public float GetTargetDistance () {

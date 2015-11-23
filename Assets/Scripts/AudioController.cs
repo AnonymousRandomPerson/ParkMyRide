@@ -12,6 +12,10 @@ public class AudioController : MonoBehaviour {
 	AudioSource uiSource;
 	// The audio source on the player used for the engine sound.
 	AudioSource engineSource;
+	// The container for the target source.
+	GameObject targetSound;
+	// The moving audio source for the target.
+	AudioSource targetSource;
 	[Tooltip("Car collision sound.")]
 	public AudioClip carCollide;
 	[Tooltip("Warning when a person is in front of the car.")]
@@ -39,7 +43,8 @@ public class AudioController : MonoBehaviour {
 	// Timer for playing sounds that guide the player to a free parking spot.
 	int rightFloorTimer = 0;
 	// Whether the player has found its target.
-	bool found = false;
+	[HideInInspector]
+	public bool found = false;
 
 	// Timer for scheduling the floor change sound after changing targets.
 	int changeFloorTimer = -1;
@@ -50,6 +55,8 @@ public class AudioController : MonoBehaviour {
 		floorTracker = transform.GetComponentInParent<FloorTracker> ();
 		uiSource = GetComponent<AudioSource> ();
 		engineSource = transform.parent.GetComponent<AudioSource> ();
+		targetSound = transform.FindChild ("Target Sound").gameObject;
+		targetSource = targetSound.GetComponent<AudioSource> ();
 	}
 	
 	// Update is called once per frame.
@@ -66,7 +73,8 @@ public class AudioController : MonoBehaviour {
 			rightFloorTimer = 0;
 			float distance = floorTracker.GetTargetDistance ();
 			rightFloorTimerLimit = 10 + (int)(90 * distance / 100);
-			uiSource.PlayOneShot (rightFloor);
+			targetSound.transform.position = transform.position + 2 * Vector3.Normalize (floorTracker.GetTargetVector ());
+			targetSource.PlayOneShot (rightFloor);
 		}
 
 		float absoluteSpeed = Mathf.Abs (driver.moveSpeed);
@@ -78,8 +86,8 @@ public class AudioController : MonoBehaviour {
 	public void Collide (Collision collision) {
 		if (collideTimer > COLLIDETIMERLIMIT) {
 			collideTimer = 0;
-			float volume = driver.moveSpeed / driver.maxSpeed;
-			if (collision.collider.name == "Car" || collision.collider.name == "Wall") {
+			float volume = Mathf.Abs (driver.moveSpeed) / driver.maxSpeed;
+			if (collision.collider.tag == "Obstacle") {
 				uiSource.PlayOneShot (carCollide, volume);
 			}
 		}
@@ -110,15 +118,6 @@ public class AudioController : MonoBehaviour {
 			uiSource.PlayOneShot (goDown);
 		} else {
 			uiSource.PlayOneShot (rightFloor);
-		}
-	}
-
-	// Plays a sound when a person gets in the way of the player.
-	void OnTriggerEnter (Collider collider) {
-		if (collider.name == "Person") {
-			uiSource.PlayOneShot (personWarning);
-		} else if (collider.name == "Free Spot") {
-			foundSpot();
 		}
 	}
 }

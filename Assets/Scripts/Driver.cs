@@ -90,4 +90,11 @@ public class Driver : MonoBehaviour {
 	void OnCollisionEnter (Collision collision) {
 		audioController.Collide (collision);
 	}
+	
+	// Signals that the player has arrived at the target position.
+	void OnTriggerEnter (Collider collider) {
+		if (collider.name == "Free Spot") {
+			audioController.foundSpot ();
+		}
+	}
 }
