@@ -100,6 +100,6 @@ public class Driver : MonoBehaviour {
 	
 	// Signals that the player has arrived at the target position.
 	void OnTriggerEnter (Collider collider) {
-		audioController.foundSpot (collider);
+		audioController.FoundSpot (collider);
 	}
 }

@@ -38,6 +38,10 @@ public class AudioController : MonoBehaviour {
 	public AudioClip disable;
 	[Tooltip("The obstacle tracker enabling sound.")]
 	public AudioClip enable;
+	[Tooltip("Notifies the player about a change in parking spot availability.")]
+	public AudioClip changeScene;
+	[Tooltip("Notifies the player that there are no parking spots available.")]
+	public AudioClip noSpot;
 
 	// Minimum time delay between collision sounds being played.
 	const int COLLIDETIMERLIMIT = 5;
@@ -66,6 +70,7 @@ public class AudioController : MonoBehaviour {
 		engineSource = transform.parent.GetComponent<AudioSource> ();
 		targetSound = transform.FindChild ("Target Sound").gameObject;
 		targetSource = targetSound.GetComponent<AudioSource> ();
+		ChangeTarget (0, false);
 	}
 	
 	// Update is called once per frame.
@@ -103,16 +108,19 @@ public class AudioController : MonoBehaviour {
 	}
 
 	// Plays a sound if the player reaches the target.
-	public void foundSpot (Collider collider) {
-		if (!found && collider.name == floorTracker.target[floorTracker.targetIndex].name) {
+	public void FoundSpot (Collider collider) {
+		if (floorTracker.targetIndex > -1 && !found && collider.name == floorTracker.target[floorTracker.targetIndex].name) {
 			uiSource.PlayOneShot (arriving);
 			found = true;
 		}
 	}
 
-	public void ChangeTarget(int targetIndex) {
+	// Plays a sound when looking for a target.
+	public void ChangeTarget(int targetIndex, bool sceneChanged) {
 		if (targetIndex == 1) {
 			uiSource.PlayOneShot (lookForExit);
+		} else if (sceneChanged) {
+			uiSource.PlayOneShot (changeScene);
 		} else {
 			uiSource.PlayOneShot (lookForSpot);
 		}
@@ -122,7 +130,9 @@ public class AudioController : MonoBehaviour {
 
 	// Plays a sound when the player or the target changes floors.
 	public void ChangeFloor () {
-		if (floorTracker.floor < floorTracker.targetFloor) {
+		if (floorTracker.targetFloor == -1) {
+			uiSource.PlayOneShot (noSpot);
+		} else if (floorTracker.floor < floorTracker.targetFloor) {
 			uiSource.PlayOneShot (goUp);
 		} else if (floorTracker.floor > floorTracker.targetFloor) {
 			uiSource.PlayOneShot (goDown);
