@@ -32,6 +32,12 @@ public class AudioController : MonoBehaviour {
 	public AudioClip lookForExit;
 	[Tooltip("Indicates that the player arrived at the target.")]
 	public AudioClip arriving;
+	[Tooltip("The reverse warning sound.")]
+	public AudioClip reverseWarning;
+	[Tooltip("The obstacle tracker disabling sound.")]
+	public AudioClip disable;
+	[Tooltip("The obstacle tracker enabling sound.")]
+	public AudioClip enable;
 
 	// Minimum time delay between collision sounds being played.
 	const int COLLIDETIMERLIMIT = 5;
@@ -45,6 +51,9 @@ public class AudioController : MonoBehaviour {
 	// Whether the player has found its target.
 	[HideInInspector]
 	public bool found = false;
+	[HideInInspector]
+	// Whether obstacle sounds are enabled.
+	public bool obstacleSounds = true;
 
 	// Timer for scheduling the floor change sound after changing targets.
 	int changeFloorTimer = -1;
@@ -93,8 +102,9 @@ public class AudioController : MonoBehaviour {
 		}
 	}
 
-	public void foundSpot() {
-		if (!found) {
+	// Plays a sound if the player reaches the target.
+	public void foundSpot (Collider collider) {
+		if (!found && collider.name == floorTracker.target[floorTracker.targetIndex].name) {
 			uiSource.PlayOneShot (arriving);
 			found = true;
 		}
@@ -119,5 +129,18 @@ public class AudioController : MonoBehaviour {
 		} else {
 			uiSource.PlayOneShot (rightFloor);
 		}
+	}
+
+	// Plays a sound when the player is reversing and an obstacle is in the way.
+	public void ReverseWarning () {
+		if (obstacleSounds) {
+			uiSource.PlayOneShot (reverseWarning);
+		}
+	}
+
+	// Toggles obstacle sounds on and off.
+	public void ToggleObstacleSound () {
+		obstacleSounds = !obstacleSounds;
+		uiSource.PlayOneShot (obstacleSounds ? enable : disable);
 	}
 }

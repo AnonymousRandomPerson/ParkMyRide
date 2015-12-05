@@ -22,6 +22,8 @@ public class Driver : MonoBehaviour {
 	const float MAXROTATION = 130;
 	// The initial rotation of the camera.
 	Vector3 initRotation;
+	// Timer for toggling the obstacle sounds.
+	int obstacleKeyTimer;
 
 
 	// Use this for initialization.
@@ -63,6 +65,11 @@ public class Driver : MonoBehaviour {
 			// Friction.
 			moveSpeed = Mathf.MoveTowards (moveSpeed, 0, 0.1f);
 		}
+		if (--obstacleKeyTimer < 0 && GetKey (KeyCode.Return)) {
+			// Obstacle sound toggle.
+			obstacleKeyTimer = 20;
+			audioController.ToggleObstacleSound ();
+		}
 		if (Mathf.Abs (moveSpeed) > 0.5f) {
 			// Handle turn input.
 			if (GetKey (KeyCode.A, KeyCode.LeftArrow)) {
@@ -93,8 +100,6 @@ public class Driver : MonoBehaviour {
 	
 	// Signals that the player has arrived at the target position.
 	void OnTriggerEnter (Collider collider) {
-		if (collider.name == "Free Spot") {
-			audioController.foundSpot ();
-		}
+		audioController.foundSpot (collider);
 	}
 }

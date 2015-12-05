@@ -19,6 +19,8 @@ public class FloorTracker : MonoBehaviour {
 	public GameObject[] target;
 	[Tooltip("The UI text element that displays the current and target floors.")]
 	public Text floorText;
+	// Delay between allowing the target to be changed.
+	int targetChangeTimer;
 	
 	// The index of the location the car wanted to get to on the previous frame.
 	int prevIndex = -1;
@@ -30,6 +32,10 @@ public class FloorTracker : MonoBehaviour {
 	
 	// Update is called once per frame.
 	void Update () {
+		if (--targetChangeTimer < 0 && Input.GetKey (KeyCode.Space)) {
+			targetIndex = targetIndex == 0 ? 1 : 0;
+			targetChangeTimer = 20;
+		}
 		int prevFloor = floor;
 		floor = GetFloor (gameObject);
 		if (floor != prevFloor) {

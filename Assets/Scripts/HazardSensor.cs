@@ -42,9 +42,11 @@ public class HazardSensor : MonoBehaviour {
 					if (--hazardCounters [i] < 0) {
 						transform.position = transform.parent.position + 2 * Vector3.Normalize (hazard.transform.position - transform.parent.position);
 						hazardCounters [i] = distanceTime;
-						source.pitch = hazard.name == "Person" ? 2 : 1;
-						source.volume = Mathf.Min (1, 8 / distance);
-						source.PlayOneShot (source.clip);
+						if (controller.obstacleSounds) {
+							source.pitch = hazard.name == "Person" ? 2 : 1;
+							source.volume = Mathf.Min (1, 8 / distance);
+							source.PlayOneShot (source.clip);
+						}
 					}
 				}
 			}
