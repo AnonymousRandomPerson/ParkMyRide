@@ -39,6 +39,7 @@ public class SceneChanger : MonoBehaviour {
 			if (targetSpotIndex == 0) {
 				targetSpotIndex = 2;
 				car1.SetActive (true);
+				car2.SetActive (false);
 				tracker.target[0].SetActive (false);
 				tracker.target[2].SetActive (true);
 			} else if (targetSpotIndex == 2) {
@@ -48,7 +49,6 @@ public class SceneChanger : MonoBehaviour {
 			} else {
 				targetSpotIndex = 0;
 				car1.SetActive (false);
-				car2.SetActive (false);
 				tracker.target[0].SetActive (true);
 			}
 
